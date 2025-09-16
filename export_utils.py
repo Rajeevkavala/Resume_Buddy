@@ -13,7 +13,7 @@ Provided functions:
 from __future__ import annotations
 from io import BytesIO
 from datetime import datetime
-from typing import Iterable, Set
+from typing import Iterable, Set, Union, List
 
 try:
     import docx  # type: ignore
@@ -29,20 +29,26 @@ except Exception:  # pragma: no cover
     canvas = None  # type: ignore
 
 
-def _make_summary(strengths: Set[str], role: str) -> str:
+def _make_summary(strengths: Union[Set[str], List[str]], role: str) -> str:
     if not strengths:
         return f"{role} professional seeking to align skills with target role and deliver measurable impact."
-    top = ", ".join(sorted(list(strengths))[:8])
+    # Convert to list if it's a set
+    strengths_list = list(strengths) if isinstance(strengths, set) else strengths
+    top = ", ".join(sorted(strengths_list)[:8])
     return f"{role} professional with strengths in {top}; focused on delivering measurable, high-impact results."
 
 
-def build_improved_resume_text(resume_text: str, suggestions: Iterable[str], strengths: Set[str], gaps: Set[str], role: str) -> str:
+def build_improved_resume_text(resume_text: str, suggestions: Iterable[str], strengths: Union[Set[str], List[str]], gaps: Union[Set[str], List[str]], role: str) -> str:
     summary = _make_summary(strengths, role)
     skill_lines = []
     if strengths:
-        skill_lines.append("Core: " + ", ".join(sorted(strengths)))
+        # Convert to list if it's a set
+        strengths_list = list(strengths) if isinstance(strengths, set) else strengths
+        skill_lines.append("Core: " + ", ".join(sorted(strengths_list)))
     if gaps:
-        skill_lines.append("Targets: " + ", ".join(sorted(gaps)))
+        # Convert to list if it's a set
+        gaps_list = list(gaps) if isinstance(gaps, set) else gaps
+        skill_lines.append("Targets: " + ", ".join(sorted(gaps_list)))
     skills_block = "\n".join(skill_lines) if skill_lines else "(Add explicit skills section)"
 
     sug_block = "\n".join(f"- {s}" for s in suggestions) if suggestions else "(No improvement suggestions generated)"
